@@ -47,8 +47,8 @@
   .lbl.small .s{color:var(--muted);opacity:1}
   body.nolabels .lbl{display:none}
   #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:30px;text-align:center;font-size:14px;color:var(--muted)}
-  #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 56px);font-size:11px;color:var(--muted);background:rgba(255,255,255,.7);padding:4px 10px;border-radius:20px;transition:opacity .6s}
-  @media (max-width:560px){#head{padding:10px 12px}#head h1{font-size:14px}#tools{top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 58px);flex-direction:row}}
+  #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 56px);font-size:11px;color:var(--muted);background:rgba(255,255,255,.7);padding:4px 10px;border-radius:20px;transition:opacity .6s;pointer-events:none;white-space:nowrap}
+  @media (max-width:560px){#head{padding:10px 12px}#head h1{font-size:14px}#tools{top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 58px);right:12px;flex-direction:row}#hint{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 108px)}}
 </style>
 </head>
 <body>
