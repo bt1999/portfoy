@@ -55,17 +55,9 @@
 <canvas id="c"></canvas>
 
 <div id="head" class="card">
-  <h1>Ofis Katı — Mimari Çalışma</h1>
-  <p>4 kişilik çalışma alanı · Müdür odası · Dinlenme salonu</p>
-  <div id="legend" class="open">
-    <div class="zone" data-view="mudur"><i style="background:#c9a77c"></i><b>Müdür odası</b><span>≈ 21 m²</span></div>
-    <div class="zone" data-view="calisma"><i style="background:#7f8f83"></i><b>Çalışma alanı · 4 kişi</b><span>≈ 30 m²</span></div>
-    <div class="zone" data-view="dinlenme"><i style="background:#c46a3b"></i><b>Dinlenme salonu + mutfak</b><span>≈ 25 m²</span></div>
-    <div class="zone" data-view="gorusme"><i style="background:#9aa6b2"></i><b>Müşteri görüşme masası</b><span>≈ 20 m²</span></div>
-    <div class="zone" data-view="giris"><i style="background:#d8cdb8"></i><b>Giriş / bekleme</b><span>≈ 10 m²</span></div>
-    <div class="note">Ölçüler mimari plandan alınmıştır (toplam ≈ 116 m² açık alan + WC 4,06 m² + depo/acil çıkış 3,86 m²). Tavan yüksekliği 2,90 m, güney ve doğu cepheler boy camı olarak varsayıldı.</div>
-    <div class="note" style="margin-top:6px">Hazırlayan: Berkay Tapan · RE/MAX İKON</div>
-  </div>
+  <h1 id="pTitle"></h1>
+  <p id="pSub"></p>
+  <div id="legend" class="open"></div>
   <button id="toggleLegend">Alanları gizle</button>
 </div>
 
@@ -74,23 +66,43 @@
   <button id="bLbl" class="on" title="Etiketler">Etiket</button>
 </div>
 
-<div id="bar" class="card">
-  <button data-view="genel" class="on">Genel</button>
-  <button data-view="plan">Plan</button>
-  <button data-view="mudur">Müdür</button>
-  <button data-view="calisma">Çalışma</button>
-  <button data-view="dinlenme">Dinlenme</button>
-  <button data-view="gorusme">Görüşme</button>
-  <button data-view="giris">Giriş</button>
-</div>
+<div id="bar" class="card"></div>
 <div id="hint">Döndürmek için sürükle · yakınlaştırmak için iki parmak</div>
+<div id="expired" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:30px;text-align:center;background:var(--bg);z-index:10"><b style="font-size:18px">Sayfanın süresi doldu</b><span style="font-size:13px;color:var(--muted)">Güncel bilgi için: Berkay Tapan · RE/MAX İKON · 0539 231 40 47</span></div>
 <div id="err">3D görünüm yüklenemedi. Sayfayı yenilemeyi deneyin.</div>
 <div id="labels"></div>
 
 <!-- Scene description in plan coordinates (cm). x → east, y → south, z → up. -->
 <script id="build">
+const YAYIN_BITIS = '2026-11-17T09:59:13Z';
+// ÖRNEK PROJE: Helis Beyaz Ofis (14.11.2026). Yeni planda bu dosyayı kopyalayıp yeniden yaz.
+// Plan koordinatları cm: x → doğu (sağ), y → güney (aşağı), z → yukarı. Kamera noktaları metre: [x, yükseklik, y].
+const PROJE = {
+  baslik: 'Ofis Katı — Mimari Çalışma',
+  altBaslik: '4 kişilik çalışma alanı · Müdür odası · Dinlenme salonu',
+  tavan: 290,
+  boyut: [1565, 1042],
+  zonlar: [
+    {ad:'Müdür odası', renk:'#c9a77c', alan:'≈ 21 m²', gorunum:'mudur'},
+    {ad:'Çalışma alanı · 4 kişi', renk:'#7f8f83', alan:'≈ 30 m²', gorunum:'calisma'},
+    {ad:'Dinlenme salonu + mutfak', renk:'#c46a3b', alan:'≈ 25 m²', gorunum:'dinlenme'},
+    {ad:'Müşteri görüşme masası', renk:'#9aa6b2', alan:'≈ 20 m²', gorunum:'gorusme'},
+    {ad:'Giriş / bekleme', renk:'#d8cdb8', alan:'≈ 10 m²', gorunum:'giris'},
+  ],
+  not: 'Ölçüler mimari plandan alınmıştır (toplam ≈ 116 m² açık alan + WC 4,06 m² + depo/acil çıkış 3,86 m²). Tavan yüksekliği 2,90 m, güney ve doğu cepheler boy camı olarak varsayıldı.',
+  gorunumler: {
+    genel:    {ad:'Genel',    p:[16.5,13.5,17.5], t:[7.4,0,5.4]},
+    plan:     {ad:'Plan',     p:[7.8,23,5.35],    t:[7.8,0,5.2]},
+    mudur:    {ad:'Müdür',    p:[6.9,2.1,6.2],    t:[2.6,0.7,8.6], ic:true},
+    calisma:  {ad:'Çalışma',  p:[12.9,2.4,6.1],   t:[9.4,0.6,8.6], ic:true},
+    dinlenme: {ad:'Dinlenme', p:[7.6,2.3,6.9],    t:[12.2,0.6,3.6], ic:true},
+    gorusme:  {ad:'Görüşme',  p:[6.1,2.2,2.6],    t:[2.4,0.6,4.6], ic:true},
+    giris:    {ad:'Giriş',    p:[2.45,1.65,1.3],  t:[7.5,0.9,5.0], ic:true},
+  },
+};
+
 function buildOffice(A){
-  const H = 290;
+  const H = PROJE.tavan;
 
   /* ---------- helpers ---------- */
   const officeChair = (x,y,a,exec)=>{ A.push(x,y,a);
@@ -301,6 +313,7 @@ function buildOffice(A){
   A.label('WC','4,06 m²',1135,110,250,null,true);
   A.label('Depo / Acil çıkış','3,86 m²',1410,270,250,null,true);
 }
+
 </script>
 
 <script type="importmap">
@@ -311,7 +324,25 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-const S = 0.01, H = 290;
+const S = 0.01, H = PROJE.tavan || 290;
+const [W_, D_] = PROJE.boyut;               // building extents in cm
+const CX = W_/200, CZ = D_/200, R = Math.max(W_,D_)/200 + 3;
+
+/* ---------- 3-day expiry ---------- */
+if (typeof YAYIN_BITIS !== 'undefined' && Date.now() > Date.parse(YAYIN_BITIS)) {
+  document.getElementById('expired').style.display = 'flex';
+  throw new Error('expired');
+}
+
+/* ---------- page UI from PROJE ---------- */
+document.getElementById('pTitle').textContent = PROJE.baslik;
+document.getElementById('pSub').textContent = PROJE.altBaslik;
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.getElementById('legend').innerHTML =
+  PROJE.zonlar.map(z=>`<div class="zone" data-view="${esc(z.gorunum||'')}"><i style="background:${esc(z.renk)}"></i><b>${esc(z.ad)}</b><span>${esc(z.alan)}</span></div>`).join('') +
+  `<div class="note">${esc(PROJE.not)}</div><div class="note" style="margin-top:6px">Hazırlayan: Berkay Tapan · RE/MAX İKON</div>`;
+document.getElementById('bar').innerHTML = Object.entries(PROJE.gorunumler)
+  .map(([k,v],i)=>`<button data-view="${esc(k)}"${i?'':' class="on"'}>${esc(v.ad)}</button>`).join('');
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -419,14 +450,14 @@ buildOffice(A);
 
 // surrounding ground + slab edge
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(80,80), M.ground);
-ground.rotation.x = -Math.PI/2; ground.position.set(7.8,-0.105,5.2); ground.receiveShadow = true; scene.add(ground);
+ground.rotation.x = -Math.PI/2; ground.position.set(CX,-0.105,CZ); ground.receiveShadow = true; scene.add(ground);
 
 /* ---------- lights ---------- */
 scene.add(new THREE.HemisphereLight('#fffaf0','#d8d2c6',0.55));
 const sun = new THREE.DirectionalLight('#fff1dc', 2.4);
-sun.position.set(13.5, 15, 19); sun.target.position.set(7.2,0,5.2);
+sun.position.set(CX+6, 15, CZ+14); sun.target.position.set(CX,0,CZ);
 sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
-Object.assign(sun.shadow.camera, {left:-12,right:12,top:12,bottom:-12,near:1,far:60});
+Object.assign(sun.shadow.camera, {left:-R,right:R,top:R,bottom:-R,near:1,far:80});
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
 scene.add(sun, sun.target);
 
@@ -443,17 +474,9 @@ function applyCut(){
 }
 
 /* ---------- views ---------- */
-const V = (p,t)=>({p:new THREE.Vector3(...p), t:new THREE.Vector3(...t)});
-const views = {
-  genel:    V([16.5,13.5,17.5],[7.4,0,5.4]),
-  plan:     V([7.8,23,5.35],[7.8,0,5.2]),
-  mudur:    V([6.9,2.1,6.2],[2.6,0.7,8.6]),
-  calisma:  V([12.9,2.4,6.1],[9.4,0.6,8.6]),
-  dinlenme: V([7.6,2.3,6.9],[12.2,0.6,3.6]),
-  gorusme:  V([6.1,2.2,2.6],[2.4,0.6,4.6]),
-  giris:    V([2.45,1.65,1.3],[7.5,0.9,5.0]),
-};
-const interior = new Set(['mudur','calisma','dinlenme','gorusme','giris']);
+const views = {}, interior = new Set();
+for(const [k,v] of Object.entries(PROJE.gorunumler)){ views[k]={p:new THREE.Vector3(...v.p), t:new THREE.Vector3(...v.t)}; if(v.ic) interior.add(k); }
+const first = Object.keys(views)[0];
 let anim = null;
 function goView(name){
   const v = views[name]; if(!v) return;
@@ -461,7 +484,7 @@ function goView(name){
   anim = {from:{p:camera.position.clone(), t:controls.target.clone()}, to:v, t0:performance.now(), dur:1100};
   if(interior.has(name) && cut){ cut=false; applyCut(); document.getElementById('bCut').classList.remove('on'); }
 }
-camera.position.copy(views.genel.p); controls.target.copy(views.genel.t);
+camera.position.copy(views[first].p); controls.target.copy(views[first].t);
 
 document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>goView(el.dataset.view)));
 document.getElementById('bCut').addEventListener('click',e=>{ cut=!cut; applyCut(); e.currentTarget.classList.toggle('on',cut); });
@@ -503,7 +526,7 @@ requestAnimationFrame(loop);
 </script>
 <script>
   // Fallback if the 3D library fails to load
-  setTimeout(()=>{ if(!document.querySelector('#labels .lbl')){ document.getElementById('err').style.display='flex'; } }, 9000);
+  setTimeout(()=>{ if(!document.querySelector('#labels .lbl') && document.getElementById('expired').style.display!=='flex'){ document.getElementById('err').style.display='flex'; } }, 9000);
 </script>
 </body>
 </html>
