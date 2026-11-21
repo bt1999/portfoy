@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Ataşehir İçerenköy Plaza — 3D Mimari Çalışma</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Zemin + 2 normal kat + çatı katı ve teras · dış cephe ve boş kat hacimleri · Berkay Tapan, RE/MAX İKON">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RE/MAX İKON">
+<meta property="og:locale" content="tr_TR">
+<meta property="og:title" content="Ataşehir İçerenköy Plaza — 3D Mimari Çalışma">
+<meta property="og:description" content="Zemin + 2 normal kat + çatı katı ve teras · dış cephe ve boş kat hacimleri · Berkay Tapan, RE/MAX İKON">
+<meta property="og:url" content="https://bt1999.github.io/portfoy/atasehir-plaza-3d/">
+<meta property="og:image" content="https://bt1999.github.io/portfoy/assets/profil-80d6eb06e4.jpg">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#23262b;--muted:#6b6f76;--bg:#f3f1ec;--card:rgba(255,255,255,.92);--line:#e4e0d8;--acc:#b5643a;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);font-family:Manrope,system-ui,sans-serif;color:var(--ink);overflow:hidden;-webkit-tap-highlight-color:transparent}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+  .card{background:var(--card);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 24px rgba(30,30,30,.08)}
+  #head{position:fixed;top:12px;left:12px;padding:12px 14px;max-width:min(330px,calc(100% - 24px))}
+  #head h1{font-size:15px;margin:0 0 2px;font-weight:700;letter-spacing:.2px}
+  #head p{margin:0;font-size:12px;color:var(--muted);line-height:1.45}
+  #legend{margin-top:10px;display:none}
+  #legend.open{display:block}
+  .zone{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:6px 0;border-top:1px solid var(--line);cursor:pointer}
+  .zone:first-child{border-top:none}
+  .zone i{width:11px;height:11px;border-radius:3px;flex:none}
+  .zone b{font-weight:600;flex:1}
+  .zone span{color:var(--muted);font-variant-numeric:tabular-nums}
+  .note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.45}
+  #toggleLegend{margin-top:8px;font:600 12px Manrope,sans-serif;color:var(--acc);background:none;border:none;padding:0;cursor:pointer}
+  #bar{position:fixed;left:50%;transform:translateX(-50%);bottom:max(12px,env(safe-area-inset-bottom));display:flex;gap:6px;padding:6px;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
+  #bar::-webkit-scrollbar{display:none}
+  #bar button,#tools button{font:600 12.5px Manrope,sans-serif;border:none;background:transparent;color:var(--ink);padding:9px 12px;border-radius:10px;white-space:nowrap;cursor:pointer}
+  #bar button.on{background:var(--ink);color:#fff}
+  #tools{position:fixed;top:12px;right:12px;display:flex;flex-direction:column;gap:2px;padding:5px}
+  #tools button.on{color:var(--acc)}
+  .lbl{position:fixed;left:0;top:0;pointer-events:none;transform:translate(-50%,-100%);text-align:center;white-space:nowrap}
+  .lbl .t{display:inline-block;background:rgba(35,38,43,.86);color:#fff;font-size:11.5px;font-weight:600;padding:4px 8px;border-radius:7px}
+  .lbl .s{display:block;font-size:10.5px;color:#fff;opacity:.75;font-weight:400}
+  .lbl.small .t{background:rgba(255,255,255,.9);color:var(--ink);font-weight:600;border:1px solid var(--line)}
+  .lbl.small .s{color:var(--muted);opacity:1}
+  body.nolabels .lbl{display:none}
+  #err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:30px;text-align:center;font-size:14px;color:var(--muted)}
+  #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(max(12px,env(safe-area-inset-bottom)) + 56px);font-size:11px;color:var(--muted);background:rgba(255,255,255,.7);padding:4px 10px;border-radius:20px;transition:opacity .6s;pointer-events:none;white-space:nowrap}
+  @media (max-width:560px){#head{padding:10px 12px}#head h1{font-size:14px}#tools{top:auto;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 58px);right:12px;flex-direction:row}#hint{bottom:calc(max(12px,env(safe-area-inset-bottom)) + 108px)}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="head" class="card">
+  <h1 id="pTitle"></h1>
+  <p id="pSub"></p>
+  <div id="legend" class="open"></div>
+  <button id="toggleLegend">Alanları gizle</button>
+</div>
+
+<div id="tools" class="card">
+  <button id="bCut" title="Duvarları kesitle">Kesit</button>
+  <button id="bLbl" class="on" title="Etiketler">Etiket</button>
+</div>
+
+<div id="bar" class="card"></div>
+<div id="hint">Döndürmek için sürükle · yakınlaştırmak için iki parmak</div>
+<div id="expired" style="position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:30px;text-align:center;background:var(--bg);z-index:10"><b style="font-size:18px">Sayfanın süresi doldu</b><span style="font-size:13px;color:var(--muted)">Güncel bilgi için: Berkay Tapan · RE/MAX İKON · 0539 231 40 47</span></div>
+<div id="err">3D görünüm yüklenemedi. Sayfayı yenilemeyi deneyin.</div>
+<div id="labels"></div>
+
+<!-- Scene description in plan coordinates (cm). x → east, y → south, z → up. -->
+<script id="build">
+const YAYIN_BITIS = '2026-11-24T10:46:36Z';
+// Ataşehir İçerenköy Plaza — dış cephe + boş kat hacimleri (19.11.2026)
+// Koordinatlar cm: x → doğu, y → güney (ön cephe = güney, y=1173), z → yukarı. Zemin ±0.
+// Normal kat oturumu 951 × 1173; zemin 801 × 874 (x 150–951, y 150–1023): üst katlar batı, kuzey ve güneyde 150 cm konsol.
+// Kotlar (kesit/görünüş): zemin 0, 1. normal +370, 2. normal +660, çatı +950, saçak +1040, çatı tepe ≈ +1245, asansör kulesi +1300.
+const PROJE = {
+  baslik: 'Ataşehir İçerenköy Plaza — 3D Mimari Çalışma',
+  altBaslik: 'Zemin + 2 normal kat + çatı katı ve teras · boş kat hacimleri',
+  tavan: 290,
+  boyut: [951, 1173],
+  zonlar: [
+    {ad:'Zemin kat · dükkân', renk:'#d8cdb8', alan:'≈ 44,65 m²', gorunum:'zemin'},
+    {ad:'1. normal kat', renk:'#7f8f83', alan:'≈ 91,22 m²', gorunum:'kat1'},
+    {ad:'2. normal kat', renk:'#9aa6b2', alan:'≈ 91,22 m²', gorunum:'kat2'},
+    {ad:'Çatı katı + teras', renk:'#c46a3b', alan:'≈ 55 m² + 21,90 m²', gorunum:'teras'},
+  ],
+  not: 'Ölçüler mimari projeden (kat planları, B-B kesiti, ön ve arka görünüş) alınmıştır; cephe malzemeleri binanın fotoğrafına göre işlendi. Katlar boş gösterilmiştir. Bodrum kat gösterilmedi, çatının eğimli formu ve iç bölmeler sadeleştirildi. Kesit düğmesi zemin kat planını açar.',
+  gorunumler: {
+    genel: {ad:'Genel',     p:[-5.6,8.6,22.6], t:[4.6,5.2,6.2]},
+    on:    {ad:'Ön cephe',  p:[4.75,5.2,25.5], t:[4.75,5.8,6.0]},
+    arka:  {ad:'Arka',      p:[13.5,8.4,-11.5], t:[4.75,5.4,6.0]},
+    plan:  {ad:'Plan',      p:[4.76,31,5.9],   t:[4.75,0,5.86]},
+    zemin: {ad:'Zemin',     p:[5.3,1.65,9.6],  t:[1.8,1.3,2.6], ic:true},
+    kat1:  {ad:'1. Kat',    p:[5.35,5.35,10.7], t:[0.9,5.0,3.0], ic:true},
+    kat2:  {ad:'2. Kat',    p:[5.35,8.25,10.7], t:[0.9,7.9,3.0], ic:true},
+    teras: {ad:'Teras',     p:[4.7,11.3,11.1], t:[0.9,10.3,7.6], ic:true},
+  },
+};
+
+function buildOffice(A){
+  const C = {cut:true};
+  const N1 = 370, N2 = 660, CT = 950, EAVE = 1040;
+
+  /* ---------- helpers ---------- */
+  const minus = (r, holes)=>{ let out=[r];
+    for(const [hx0,hy0,hx1,hy1] of holes){ const nx=[];
+      for(const [x0,y0,x1,y1] of out){
+        if(hx1<=x0||hx0>=x1||hy1<=y0||hy0>=y1){ nx.push([x0,y0,x1,y1]); continue; }
+        if(hy0>y0) nx.push([x0,y0,x1,hy0]);
+        if(hy1<y1) nx.push([x0,hy1,x1,y1]);
+        const yy0=Math.max(y0,hy0), yy1=Math.min(y1,hy1);
+        if(hx0>x0) nx.push([x0,yy0,hx0,yy1]);
+        if(hx1<x1) nx.push([hx1,yy0,x1,yy1]);
+      } out=nx; }
+    return out; };
+  const slab = (r,z0,z1,m,holes=[])=>{ for(const [x0,y0,x1,y1] of minus(r,holes)) A.box(x0,y0,x1,y1,z0,z1,m,C); };
+
+  const winX = (x0,y0,x1,y1,zb,zt,zs,ze,tr)=>{
+    const ym=(y0+y1)/2;
+    if(zs>zb) A.wall(x0,y0,x1,y1,zb,zs);
+    if(ze<zt) A.wall(x0,y0,x1,y1,ze,zt);
+    A.box(x0,ym-1,x1,ym+1,zs,ze,'glass',{cut:true,cast:false});
+    A.box(x0,ym-3,x1,ym+3,zs,zs+5,'frame',C); A.box(x0,ym-3,x1,ym+3,ze-5,ze,'frame',C);
+    if(tr) A.box(x0,ym-3,x1,ym+3,tr,tr+5,'frame',C);
+    const n=Math.max(1,Math.round((x1-x0)/130));
+    for(let i=0;i<=n;i++){ const xx=x0+(x1-x0)*i/n; A.box(Math.max(x0,xx-2.5),ym-3,Math.min(x1,xx+2.5),ym+3,zs,ze,'frame',C); } };
+  const winY = (x0,y0,x1,y1,zb,zt,zs,ze,tr)=>{
+    const xm=(x0+x1)/2;
+    if(zs>zb) A.wall(x0,y0,x1,y1,zb,zs);
+    if(ze<zt) A.wall(x0,y0,x1,y1,ze,zt);
+    A.box(xm-1,y0,xm+1,y1,zs,ze,'glass',{cut:true,cast:false});
+    A.box(xm-3,y0,xm+3,y1,zs,zs+5,'frame',C); A.box(xm-3,y0,xm+3,y1,ze-5,ze,'frame',C);
+    if(tr) A.box(xm-3,y0,xm+3,y1,tr,tr+5,'frame',C);
+    const n=Math.max(1,Math.round((y1-y0)/130));
+    for(let i=0;i<=n;i++){ const yy=y0+(y1-y0)*i/n; A.box(xm-3,Math.max(y0,yy-2.5),xm+3,Math.min(y1,yy+2.5),zs,ze,'frame',C); } };
+  // parts: [a,b,type,zs,ze,transom] · s=duvar, w=pencere, cw=boy camı, d=kapı, gd=cam kapı, ed=asansör kapısı, o=kapı boşluğu
+  const run = (axis,p0,p1,zb,zt,parts)=>{
+    const R = axis==='x' ? (a,b)=>[a,p0,b,p1] : (a,b)=>[p0,a,p1,b];
+    const win = axis==='x' ? winX : winY;
+    for(const [a,b,t,zs,ze,tr] of parts){
+      const [x0,y0,x1,y1] = R(a,b);
+      if(t==='s') A.wall(x0,y0,x1,y1,zb,zt);
+      else if(t==='w') win(x0,y0,x1,y1,zb,zt,zs,ze,tr);
+      else if(t==='cw') win(x0,y0,x1,y1,zb,zt,zb,zt);
+      else if(t==='gd') win(x0,y0,x1,y1,zb,zt,zb,zb+300,zb+235);
+      else { A.wall(x0,y0,x1,y1,zb+210,zt);
+        if(t==='d') A.box(x0+(axis==='y'?4:0),y0+(axis==='x'?4:0),x1-(axis==='y'?4:0),y1-(axis==='x'?4:0),zb,zb+208,'door',C);
+        if(t==='ed') A.box(x0+(axis==='y'?6:0),y0+(axis==='x'?6:0),x1-(axis==='y'?6:0),y1-(axis==='x'?6:0),zb,zb+208,'steel',C); }
+    } };
+  const spiral = (cx,cy,zb,zt,n,a0,sweep,r0,r1)=>{
+    const rise=(zt-zb)/n, w=r1*(sweep*Math.PI/180)/n+8;
+    for(let k=0;k<n;k++){ A.push(cx,cy,a0+sweep*(k+.5)/n);
+      A.box(-w/2,r0,w/2,r1,zb+rise*k,zb+rise*(k+1),'stone',C); A.pop(); }
+    A.box(cx-7,cy-7,cx+7,cy+7,zb,zt,'steel',C); };
+  const plant = (x,y,s=1)=>{ A.sphere(x,y,62*s,24*s,'leaf'); A.sphere(x+10*s,y-6*s,80*s,18*s,'leaf2'); };
+
+  const SP = [670,330,931,610];            // spiral stair opening
+  const ST = [576,294,661,560];            // 2. kat → çatı straight stair opening
+
+  /* ---------- site ---------- */
+  A.floor(-350,1023,1300,1520,'screed',-5);          // sidewalk
+  A.floor(-350,-300,150,1023,'screed',-7);            // side yard (west)
+  A.box(233,1033,620,1100,-5,52,'oakSolid');          // wooden planter (photo)
+  for(let x=255;x<=600;x+=34) plant(x,1066,.75);
+
+  /* ================= ZEMİN KAT (0 – 340) ================= */
+  A.floor(150,150,951,1023,'tile');
+  run('x',150,170,0,340,[[150,240,'s'],[240,310,'s'],[310,558,'w',20,300,235],[558,951,'s']]);   // north
+  for(let z=25;z<300;z+=34){ A.box(240,145,310,150,z,z+16,'oakSolid'); A.box(558,145,630,150,z,z+16,'oakSolid'); }
+  run('y',150,170,0,340,[[170,222,'s'],[222,894,'w',20,300,235],[894,1003,'s']]);              // west (shop side glazing)
+  run('y',931,951,0,340,[[150,1023,'s']]);                                                      // east (party wall)
+  run('x',1003,1023,0,340,[[150,233,'s'],[233,484,'w',20,300,235],[484,488,'s'],[488,622,'gd'],[622,628,'s'],[628,813,'gd'],[813,951,'s']]); // front
+  A.box(813,1023,951,1027,0,340,'stone');                                              // stone panel right of entrance
+  // shop | core
+  run('y',595,610,0,340,[[170,560,'s'],[560,660,'d'],[660,1003,'s']]);
+  A.floor(610,170,931,1003,'stone',.3);
+  spiral(800,470,0,370,20,-30,300,18,128);
+  A.box(661,170,931,312,0,95,'stone',C);                                               // stair down to basement (balustrade block)
+  A.label('Zemin Kat','Dükkân · ≈ 44,65 m²',380,560,200,'zemin');
+  A.label('Bina girişi','',720,1080,250,null,true);
+
+  /* ---------- elevator shaft (all floors) ---------- */
+  A.wall(791,690,931,705,0,1300); A.wall(791,858,931,873,0,1300);
+  for(const [zb,zt] of [[0,340],[N1,N1+260],[N2,N2+260],[CT,1300]])
+    run('y',791,806,zb,zt,[[705,740,'s'],[740,830,'ed'],[830,858,'s']]);
+  A.label('Asansör','',860,780,150,null,true);
+
+  /* ---------- slab edges, canopy ---------- */
+  const band = (z0,z1,orange)=>{
+    A.box(-4,1173,955,1177,z0,z1,'frame',C); A.box(-4,-4,955,0,z0,z1,'frame',C); A.box(-4,0,0,1173,z0,z1,'frame',C);
+    if(orange!=null){ A.box(-5,1177,956,1178,orange,orange+4,'art',C); A.box(-5,-5,956,-4,orange,orange+4,'art',C); A.box(-5,-4,-4,1177,orange,orange+4,'art',C); } };
+  slab([0,0,951,1173],340,N1,'white',[SP]);
+  band(340,N1,352);
+  A.box(0,1023,951,1173,337,340,'frame',C);                                            // dark soffit of front cantilever
+  A.box(0,0,150,1023,337,340,'frame',C); A.box(150,0,951,150,337,340,'frame',C);
+
+  /* ================= NORMAL KATLAR ================= */
+  for(const b of [N1,N2]){
+    const t=b+260, two=b===N2;
+    slab([20,20,931,1153],b,b+1,'oakSolid',[SP,[676,165,931,330]]);
+    A.box(676,180,931,315,b,b+2,'white',C);                                            // bathroom tiles
+    // exterior walls
+    run('x',1153,1173,b,t,[[0,140,'cw'],[140,273,'s'],[273,502,'w',b+15,b+255,b+200],[502,582,'s'],[582,811,'w',b+15,b+255,b+200],[811,951,'s']]);
+    run('x',0,20,b,t,[[0,293,'s'],[293,453,'w',b+90,b+220],[453,721,'s'],[721,821,'w',b+100,b+220],[821,951,'s']]);
+    run('y',0,20,b,t,[[20,150,'s'],[150,485,'w',b+15,b+255,b+200],[485,565,'s'],[565,900,'w',b+15,b+255,b+200],[900,1033,'s'],[1033,1153,'cw']]);
+    run('y',931,951,b,t,[[20,1153,'s']]);
+    // columns on axis 1
+    A.wall(150,150,200,205,b,t); A.wall(150,968,200,1023,b,t);
+    // bathroom + kitchen niche
+    A.wall(676,165,931,180,b,t);
+    run('y',661,676,b,t,[[165,190,'s'],[190,270,'d'],[270,330,'s']]);
+    A.wall(676,315,931,330,b,t);
+    A.box(700,20,931,80,b,b+88,'cabinet',C); A.box(700,20,931,82,b+88,b+92,'stone',C);
+    A.box(700,20,931,55,b+150,b+225,'cabinet',C);
+    A.cyl(720,290,18,b,b+42,'white',15); A.box(702,300,738,315,b,b+80,'white',C);
+    A.box(770,180,830,225,b+78,b+88,'white',C); A.box(780,180,820,184,b+110,b+170,'mirror',C);
+    A.box(846,230,931,315,b,b+5,'white',C); A.box(844,230,848,315,b+5,b+200,'glass',{cut:true,cast:false});
+    // stair + fire lobby + separate room
+    run('y',661,676,b,t,[[330,665,'s']]);
+    A.wall(598,665,676,680,b,t);
+    run('y',598,613,b,t,[[680,700,'s'],[700,800,'d'],[800,873,'s']]);
+    A.wall(598,873,931,888,b,t);
+    run('y',598,613,b,t,[[888,930,'s'],[930,1030,'d'],[1030,1153,'s']]);
+    A.box(613,680,791,873,b,b+1.5,'stone',C);
+    spiral(800,470,b,b+290,17,-30,300,18,128);
+    // exterior cladding (front)
+    for(const [a,c] of [[273,502],[582,811]]){
+      A.box(a-10,1173,a,1179,b,b+290,'frame',C); A.box(c,1173,c+10,1179,b,b+290,'frame',C);
+      A.box(a,1173,c,1179,b-30,b+12,'frame',C); }
+  }
+  // stone + wood cladding, continuous over the upper floors
+  A.box(140,1173,273,1177,N1,920,'stone',C); A.box(811,1173,951,1177,N1,920,'stone',C);
+  for(const [a,c] of [[505,528],[530,555],[557,580]]) A.box(a,1173,c,1181,N1,920,'oakSolid',C);
+  A.box(273,1173,502,1179,905,920,'frame',C); A.box(582,1173,811,1179,905,920,'frame',C);
+  for(const [a,c] of [[0,150],[485,565],[900,1033]]) A.box(-4,a,0,c,N1,920,'stone',C);
+  A.box(-4,150,0,485,630,660,'frame',C); A.box(-4,565,0,900,630,660,'frame',C);
+  A.box(-4,1033,0,1173,630,660,'frame',C); A.box(-4,1173,140,1177,630,660,'frame',C);
+  slab([0,0,951,1173],630,N2,'white',[SP]);
+  // 2. kat → çatı straight stair
+  for(let k=0;k<17;k++) A.box(576,668-22*(k+1),661,668-22*k,N2+17*k,N2+17*(k+1),'stone',C);
+  A.label('1. Normal Kat','≈ 91,22 m² · mutfak nişi, WC/duş, ayrı oda',300,600,N1+200,'kat1');
+  A.label('2. Normal Kat','≈ 91,22 m² · çatıya iç merdiven',300,600,N2+200,'kat2');
+
+  /* ================= ÇATI KATI (950 –) ================= */
+  slab([0,0,951,1173],920,CT,'white',[SP,ST]);
+  slab([20,20,931,700],CT,CT+1,'oakSolid',[SP,ST]);
+  A.box(20,720,520,1153,CT,CT+3,'stone',C);                                           // terrace paving
+  // parapet / eave fascia with two orange lines (photo)
+  A.wall(0,0,951,20,CT,EAVE); A.wall(0,20,20,1173,CT,EAVE); A.wall(20,1153,951,1173,CT,EAVE);
+  A.wall(931,20,951,1153,CT,EAVE);
+  A.box(-4,1173,955,1177,920,EAVE,'frame',C); A.box(-4,-4,955,0,920,EAVE,'frame',C); A.box(-4,0,0,1173,920,EAVE,'frame',C);
+  for(const z of [935,1015]){ A.box(-5,1177,956,1178,z,z+4,'art',C); A.box(-5,-5,956,-4,z,z+4,'art',C); A.box(-5,-4,-4,1177,z,z+4,'art',C); }
+  A.box(0,1171,520,1175,EAVE,EAVE+20,'glass',{cut:true,cast:false}); A.box(-2,720,2,1173,EAVE,EAVE+20,'glass',{cut:true,cast:false});
+  // hip roof, stepped (rises 5 cm every 8,75 cm from the west, north and south eaves; terrace cut out)
+  const d=8.75, NS=40, top=(i)=>EAVE+5*(i+1);
+  for(let i=0;i<=NS;i++){
+    const z0=EAVE+5*i, z1=z0+5, o=i*d;
+    A.box(o,o,951,720,z0,z1,'fabric',C);
+    A.box(Math.max(o,520),720,951,1173-o,z0,z1,'fabric',C);
+  }
+  // terrace walls follow the roof steps
+  for(let i=0;i<NS;i++){
+    const x0=Math.max(20,i*d), x1=(i+1)*d, z1=top(i), xc=(x0+x1)/2;
+    if(xc>346 && xc<441) A.wall(x0,700,x1,720,CT+212,z1); else A.wall(x0,700,x1,720,CT,z1);
+    const y1=1153-i*d, y0=y1-d; A.wall(520,y0,540,y1,CT,z1);
+  }
+  A.wall(350,700,441,720,CT+212,top(NS));
+  A.wall(441,700,540,720,CT,top(NS)); A.wall(520,720,540,823,CT,top(NS));
+  // terrace door (glass)
+  A.box(346,709,441,711,CT,CT+210,'glass',{cut:true,cast:false});
+  A.box(344,706,348,714,CT,CT+212,'frame',C); A.box(439,706,443,714,CT,CT+212,'frame',C); A.box(344,706,443,714,CT+208,CT+212,'frame',C);
+  // core rising above the roof (stair + elevator machine room, +13.00)
+  run('y',661,676,CT,1300,[[330,700,'s'],[700,800,'d'],[800,873,'s']]);
+  A.wall(661,315,951,330,CT,1300); A.wall(676,858,791,873,CT,1300);
+  A.wall(931,330,951,873,EAVE,1300);
+  A.box(656,310,956,878,1300,1310,'frame',C);
+  A.label('Çatı Katı + Teras','≈ 55 m² + 21,90 m² teras',270,940,CT+160,'teras');
+}
+
+</script>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const S = 0.01, H = PROJE.tavan || 290;
+const [W_, D_] = PROJE.boyut;               // building extents in cm
+const CX = W_/200, CZ = D_/200, R = Math.max(W_,D_)/200 + 3;
+
+/* ---------- 3-day expiry ---------- */
+if (typeof YAYIN_BITIS !== 'undefined' && Date.now() > Date.parse(YAYIN_BITIS)) {
+  document.getElementById('expired').style.display = 'flex';
+  throw new Error('expired');
+}
+
+/* ---------- page UI from PROJE ---------- */
+document.getElementById('pTitle').textContent = PROJE.baslik;
+document.getElementById('pSub').textContent = PROJE.altBaslik;
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.getElementById('legend').innerHTML =
+  PROJE.zonlar.map(z=>`<div class="zone" data-view="${esc(z.gorunum||'')}"><i style="background:${esc(z.renk)}"></i><b>${esc(z.ad)}</b><span>${esc(z.alan)}</span></div>`).join('') +
+  `<div class="note">${esc(PROJE.not)}</div><div class="note" style="margin-top:6px">Hazırlayan: Berkay Tapan · RE/MAX İKON</div>`;
+document.getElementById('bar').innerHTML = Object.entries(PROJE.gorunumler)
+  .map(([k,v],i)=>`<button data-view="${esc(k)}"${i?'':' class="on"'}>${esc(v.ad)}</button>`).join('');
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.95;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#f3f1ec');
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.05, 200);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI/2 - 0.02;
+controls.minDistance = 0.6; controls.maxDistance = 40;
+
+/* ---------- textures ---------- */
+function canvasTex(draw, size=512){
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  draw(c.getContext('2d'), size);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+function rnd(seed){ let s=seed; return ()=> (s = (s*16807) % 2147483647) / 2147483647; }
+const oakTex = canvasTex((g,n)=>{ const r=rnd(7); const rows=8, h=n/rows;
+  for(let i=0;i<rows;i++){ let x=-r()*n;
+    while(x<n){ const w=n*(0.45+r()*0.6); const l=150+r()*25;
+      g.fillStyle=`hsl(${32+r()*4},${38+r()*8}%,${l/255*100*0.72+12}%)`; g.fillRect(x,i*h,w,h);
+      g.globalAlpha=.10; g.strokeStyle='#5b3d22';
+      for(let k=0;k<6;k++){ g.beginPath(); const yy=i*h+r()*h; g.moveTo(x,yy); g.bezierCurveTo(x+w*.3,yy+r()*6-3,x+w*.6,yy+r()*6-3,x+w,yy); g.stroke(); }
+      g.globalAlpha=1; g.fillStyle='rgba(70,45,25,.35)'; g.fillRect(x,i*h,1.5,h); x+=w; }
+    g.fillStyle='rgba(70,45,25,.35)'; g.fillRect(0,i*h,n,1.5); } });
+const screedTex = canvasTex((g,n)=>{ g.fillStyle='#d6d2cb'; g.fillRect(0,0,n,n); const r=rnd(3);
+  for(let i=0;i<9000;i++){ const v=200+r()*30|0; g.fillStyle=`rgba(${v},${v-3},${v-8},.25)`; g.fillRect(r()*n,r()*n,2+r()*3,2+r()*3); } });
+const tileTex = canvasTex((g,n)=>{ g.fillStyle='#ecebe7'; g.fillRect(0,0,n,n); g.strokeStyle='#cfccc5'; g.lineWidth=3;
+  for(let i=0;i<=4;i++){ g.beginPath(); g.moveTo(i*n/4,0); g.lineTo(i*n/4,n); g.stroke(); g.beginPath(); g.moveTo(0,i*n/4); g.lineTo(n,i*n/4); g.stroke(); } });
+const texSize = { oak:[180,180], screed:[300,300], tile:[120,120] };
+const texMap = { oak:oakTex, screed:screedTex, tile:tileTex };
+
+/* ---------- materials ---------- */
+const std = (color, rough=.8, metal=0, extra={}) => new THREE.MeshStandardMaterial({color, roughness:rough, metalness:metal, ...extra});
+const M = {
+  wall: std('#f4f1ec',.92), white: std('#fbfbfa',.35), black: std('#2a2b2e',.55,.3), metal: std('#9a9ca0',.35,.8),
+  steel: std('#c9cbce',.25,.9), frame: std('#2b2c2f',.5,.4), door: std('#efece6',.6), doorW: std('#f1eee9',.6), doorMain: std('#6f5440',.6),
+  glass: new THREE.MeshPhysicalMaterial({color:'#cfe6ee', roughness:.05, metalness:0, transparent:true, opacity:.18, depthWrite:false, side:THREE.DoubleSide}),
+  frost: new THREE.MeshPhysicalMaterial({color:'#ffffff', roughness:.6, transparent:true, opacity:.55, depthWrite:false, side:THREE.DoubleSide}),
+  mirror: std('#d9e2e6',.08,.9), exit: std('#1f8a4c',.5,0,{emissive:'#1f8a4c', emissiveIntensity:.6}),
+  cabinet: std('#f3f1ed',.5), stone: std('#e7e3dc',.3), oakSolid: std('#c49a6c',.55), deskTop: std('#efebe4',.45),
+  fabric: std('#3e4450',.9), fabric2: std('#8d8a83',.9), leather: std('#3b2f28',.55),
+  sofa: std('#7d8e80',.95), sofaL: std('#879888',.95), sofa2: std('#c9a27a',.95), sofa2L: std('#d1ad87',.95),
+  sofa3: std('#6e7a8a',.95), sofa3L: std('#788596',.95),
+  pot: std('#e6e0d6',.7), leaf: std('#4d7a49',.85), leaf2: std('#5f8c55',.85),
+  lamp: std('#fff4dd',.4,0,{emissive:'#ffe9c2', emissiveIntensity:1.6}), lampShade: std('#efe6d6',.7,0,{emissive:'#ffe9c2', emissiveIntensity:.25}),
+  screen: std('#15171a',.25,.2), keyboard: std('#e4e4e4',.6), printer: std('#d9d9d6',.5), board: std('#fcfcfc',.2),
+  felt: std('#7f8f83',1), art: std('#b5643a',.9), line: std('#d9d5cd',.6), mat: std('#c8c3ba',1), doormat: std('#6b655d',1),
+  rugM: std('#d9cdbb',1), rugL: std('#cfa48a',1), rugW: std('#c9c6bf',1),
+  ground: std('#e6e2da',1),
+};
+
+/* ---------- build API ---------- */
+const root = new THREE.Group(); scene.add(root);
+let parent = root; const stack = []; const cuttables = []; const labels = [];
+const A = {
+  box(x0,y0,x1,y1,z0,z1,m,o={}){
+    const w=Math.abs(x1-x0), d=Math.abs(y1-y0), h=z1-z0; if(w<=0||d<=0||h<=0) return null;
+    const mat = M[m] || M.white;
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w*S,h*S,d*S), mat);
+    mesh.position.set((x0+x1)/2*S,(z0+z1)/2*S,(y0+y1)/2*S);
+    mesh.castShadow = o.cast!==false && !mat.transparent; mesh.receiveShadow = true;
+    if(mat.transparent) mesh.renderOrder = 2;
+    parent.add(mesh);
+    if(o.cut){ mesh.userData.z0=z0; mesh.userData.z1=z1; cuttables.push(mesh); }
+    return mesh;
+  },
+  cyl(cx,cy,r,z0,z1,m,rb){
+    const mesh = new THREE.Mesh(new THREE.CylinderGeometry(r*S,(rb??r)*S,(z1-z0)*S,28), M[m]||M.white);
+    mesh.position.set(cx*S,(z0+z1)/2*S,cy*S); mesh.castShadow=true; mesh.receiveShadow=true; parent.add(mesh); return mesh;
+  },
+  sphere(cx,cy,cz,r,m){
+    const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(r*S,2), M[m]||M.leaf);
+    mesh.position.set(cx*S,cz*S,cy*S); mesh.castShadow=true; parent.add(mesh); return mesh;
+  },
+  push(cx,cy,deg){ const g=new THREE.Group(); g.position.set(cx*S,0,cy*S); g.rotation.y=deg*Math.PI/180; parent.add(g); stack.push(parent); parent=g; },
+  pop(){ parent = stack.pop(); },
+  floor(x0,y0,x1,y1,m,off=0){
+    const mesh = A.box(x0,y0,x1,y1,-10,off,m,{cast:false});
+    if(texMap[m]){ const t=texMap[m].clone(); t.needsUpdate=true; t.repeat.set((x1-x0)/texSize[m][0],(y1-y0)/texSize[m][1]);
+      mesh.material = std('#ffffff', m==='oak'?.6:m==='tile'?.4:.85, 0, {map:t}); }
+    return mesh;
+  },
+  rug(x0,y0,x1,y1,m){ return A.box(x0,y0,x1,y1,.5,1.6,m,{cast:false}); },
+  wall(x0,y0,x1,y1,z0=0,z1=H){ return A.box(x0,y0,x1,y1,z0,z1,'wall',{cut:true}); },
+  label(t,s,x,y,z,view,small){
+    const el=document.createElement('div'); el.className='lbl'+(small?' small':'');
+    el.innerHTML=`<span class="t">${t}${s?`<span class="s">${s}</span>`:''}</span>`;
+    document.getElementById('labels').appendChild(el);
+    labels.push({el, p:new THREE.Vector3(x*S,z*S,y*S)});
+  },
+};
+buildOffice(A);
+
+// surrounding ground + slab edge
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(80,80), M.ground);
+ground.rotation.x = -Math.PI/2; ground.position.set(CX,-0.105,CZ); ground.receiveShadow = true; scene.add(ground);
+
+/* ---------- lights ---------- */
+scene.add(new THREE.HemisphereLight('#fffaf0','#d8d2c6',0.55));
+const sun = new THREE.DirectionalLight('#fff1dc', 2.4);
+sun.position.set(CX+6, 15, CZ+14); sun.target.position.set(CX,0,CZ);
+sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera, {left:-R,right:R,top:R,bottom:-R,near:1,far:80});
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
+scene.add(sun, sun.target);
+
+/* ---------- cutaway ---------- */
+let cut = false;
+function applyCut(){
+  const c = cut ? 120 : Infinity;
+  for(const m of cuttables){
+    const {z0,z1} = m.userData;
+    if(z0 >= c){ m.visible=false; continue; }
+    m.visible = true; const top = Math.min(z1,c);
+    m.scale.y = (top-z0)/(z1-z0); m.position.y = (z0+top)/2*S;
+  }
+}
+
+/* ---------- views ---------- */
+const views = {}, interior = new Set();
+for(const [k,v] of Object.entries(PROJE.gorunumler)){ views[k]={p:new THREE.Vector3(...v.p), t:new THREE.Vector3(...v.t)}; if(v.ic) interior.add(k); }
+const first = Object.keys(views)[0];
+let anim = null;
+function goView(name){
+  const v = views[name]; if(!v) return;
+  document.querySelectorAll('#bar button').forEach(b=>b.classList.toggle('on', b.dataset.view===name));
+  anim = {from:{p:camera.position.clone(), t:controls.target.clone()}, to:v, t0:performance.now(), dur:1100};
+  if(interior.has(name) && cut){ cut=false; applyCut(); document.getElementById('bCut').classList.remove('on'); }
+}
+camera.position.copy(views[first].p); controls.target.copy(views[first].t);
+
+document.querySelectorAll('[data-view]').forEach(el=>el.addEventListener('click',()=>goView(el.dataset.view)));
+document.getElementById('bCut').addEventListener('click',e=>{ cut=!cut; applyCut(); e.currentTarget.classList.toggle('on',cut); });
+document.getElementById('bLbl').addEventListener('click',e=>{ const on=document.body.classList.toggle('nolabels'); e.currentTarget.classList.toggle('on',!on); });
+const lg = document.getElementById('legend');
+document.getElementById('toggleLegend').addEventListener('click',e=>{ const o=lg.classList.toggle('open'); e.currentTarget.textContent=o?'Alanları gizle':'Alanları göster'; });
+if(window.innerWidth < 560){ lg.classList.remove('open'); document.getElementById('toggleLegend').textContent='Alanları göster'; }
+controls.addEventListener('start',()=>{ anim=null; document.getElementById('hint').style.opacity=0; });
+setTimeout(()=>document.getElementById('hint').style.opacity=0, 6000);
+
+/* ---------- loop ---------- */
+function resize(){
+  const w = window.innerWidth, h = window.innerHeight;
+  renderer.setSize(w,h,false); camera.aspect = w/h;
+  camera.fov = w < h ? 58 : 42; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+const tmp = new THREE.Vector3();
+const ease = x => x<.5 ? 4*x*x*x : 1-Math.pow(-2*x+2,3)/2;
+function loop(now){
+  if(anim){
+    const k = Math.min(1,(now-anim.t0)/anim.dur), e = ease(k);
+    camera.position.lerpVectors(anim.from.p, anim.to.p, e);
+    controls.target.lerpVectors(anim.from.t, anim.to.t, e);
+    if(k>=1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene,camera);
+  const w = window.innerWidth, h = window.innerHeight;
+  for(const L of labels){
+    tmp.copy(L.p).project(camera);
+    const vis = tmp.z < 1 && tmp.z > -1 && Math.abs(tmp.x) < 1.1 && Math.abs(tmp.y) < 1.1;
+    L.el.style.display = vis ? '' : 'none';
+    if(vis) L.el.style.transform = `translate(${(tmp.x*.5+.5)*w}px,${(-tmp.y*.5+.5)*h}px) translate(-50%,-100%)`;
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script>
+<script>
+  // Fallback if the 3D library fails to load
+  setTimeout(()=>{ if(!document.querySelector('#labels .lbl') && document.getElementById('expired').style.display!=='flex'){ document.getElementById('err').style.display='flex'; } }, 9000);
+</script>
+</body>
+</html>
